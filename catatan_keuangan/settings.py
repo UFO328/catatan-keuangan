@@ -64,13 +64,33 @@ SIMPLE_JWT = {
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Catatan Keuangan API',
-    'DESCRIPTION': 'API Catatan Keuangan',
+    'DESCRIPTION': (
+        'API untuk mencatat keuangan pribadi.<br>'
+        'Fitur: registrasi & login akun (JWT), manajemen kategori, '
+        'dan pencatatan transaksi pemasukan/pengeluaran.'
+    ),
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
     'SERVERS': [
         {'url': 'https://catatan-keuangan-eight-khaki.vercel.app', 'description': 'Production'},
         {'url': 'http://127.0.0.1:8000', 'description': 'Local'},
     ],
+    'TAGS': [
+        {
+            'name': 'auth',
+            'description': 'Registrasi, login (JWT), dan logout akun.',
+        },
+        {
+            'name': 'transaction',
+            'description': 'CRUD transaksi (pemasukan/pengeluaran) dan kategori.',
+        },
+    ],
+    'CONTACT': {
+        'name': 'Catatan Keuangan',
+    },
+    'LICENSE': {
+        'name': 'Proprietary',
+    },
 }
 
 MIDDLEWARE = [

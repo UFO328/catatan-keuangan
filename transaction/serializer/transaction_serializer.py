@@ -1,7 +1,13 @@
-from rest_framework import serializers 
-from ..models import Transaction 
+from rest_framework import serializers
+from ..models import Transaction
 
 class TransactionSerializer(serializers.ModelSerializer):
+  """Serializer transaksi.
+
+  Field `user`, `created_at`, dan `updated_at` diisi otomatis
+  (read-only). Kategori wajib milik user yang bersangkutan
+  dan `amount` harus lebih dari 0.
+  """
   class Meta:
     model = Transaction
     fields = "__all__"
