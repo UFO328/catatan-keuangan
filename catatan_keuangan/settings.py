@@ -67,6 +67,10 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'API Catatan Keuangan',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
+    'SERVERS': [
+        {'url': 'https://catatan-keuangan-eight-khaki.vercel.app', 'description': 'Production'},
+        {'url': 'http://127.0.0.1:8000', 'description': 'Local'},
+    ],
 }
 
 MIDDLEWARE = [
