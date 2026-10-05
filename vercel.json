@@ -1,5 +1,14 @@
 {
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/catatan_keuangan/wsgi.py" }
+  "builds": [
+    {
+      "src": "catatan_keuangan/wsgi.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "catatan_keuangan/wsgi.py"
+    }
   ]
 }
