@@ -53,8 +53,6 @@ class CategoryAPI(viewsets.ModelViewSet):
   serializer_class = CategorySerializer
 
   def get_queryset(self):
-    if getattr(self, "swagger_fake_view", False):
-      return Category.objects.none()
     queryset = Category.objects.select_related("user")
     return queryset
 

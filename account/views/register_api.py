@@ -55,7 +55,7 @@ class RegisterAPI(APIView):
       OpenApiExample(
         "Contoh response sukses",
         value={"message": "Account Berhasil Dibuat"},
-        response=True,
+        response_only=True,
       ),
     ],
     tags=["auth"],

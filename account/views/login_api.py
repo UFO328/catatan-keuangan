@@ -45,7 +45,7 @@ TokenPairResponse = inline_serializer(
         "username": "riski",
         "id": 1,
       },
-      response=True,
+      response_only=True,
     ),
   ],
   tags=["auth"],

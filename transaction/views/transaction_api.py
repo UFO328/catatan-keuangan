@@ -97,8 +97,6 @@ class TransactionAPI(viewsets.ModelViewSet):
   filterset_class = [TransactionFilter]
 
   def get_queryset(self):
-    if getattr(self, "swagger_fake_view", False):
-      return Transaction.objects.none()
     queryset = Transaction.objects.filter(user=self.request.user).select_related("category")
     return queryset
 

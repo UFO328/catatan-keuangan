@@ -1,0 +1,801 @@
+openapi: 3.0.3
+info:
+  title: Catatan Keuangan API
+  version: 1.0.0
+  description: 'API untuk mencatat keuangan pribadi.<br>Fitur: registrasi & login
+    akun (JWT), manajemen kategori, dan pencatatan transaksi pemasukan/pengeluaran.'
+  contact:
+    name: Catatan Keuangan
+  license:
+    name: Proprietary
+paths:
+  /auth/catatan_keuangan/api/login/:
+    post:
+      operationId: auth_catatan_keuangan_api_login_create
+      description: Mengembalikan pasangan access token & refresh token JWT (access
+        aktif 15 menit, refresh aktif 7 hari), beserta username dan id user.
+      summary: Login akun
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+            examples:
+              ContohRequest:
+                value:
+                  username: riski
+                  password: passwordku123
+                summary: Contoh request
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Login'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Login'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenPairResponse'
+              examples:
+                ContohResponseSukses:
+                  value:
+                    access: eyJhbGciOiJIUzI1NiIs...
+                    refresh: eyJhbGciOiJIUzI1NiIs...
+                    username: riski
+                    id: 1
+                  summary: Contoh response sukses
+          description: ''
+        '401':
+          description: Kredensial tidak valid.
+  /auth/catatan_keuangan/api/logout/:
+    post:
+      operationId: auth_catatan_keuangan_api_logout_create
+      description: Men-blacklist refresh token sehingga token tersebut tidak bisa
+        dipakai lagi untuk mendapatkan access token baru.
+      summary: Logout (blacklist refresh token)
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+            examples:
+              ContohRequest:
+                value:
+                  refresh: eyJhbGciOiJIUzI1NiIs...
+                summary: Contoh request
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '205':
+          description: Token berhasil di-blacklist.
+        '400':
+          description: Token tidak valid.
+  /auth/catatan_keuangan/api/register/:
+    post:
+      operationId: auth_catatan_keuangan_api_register_create
+      description: Mendaftarkan user baru. Username dan email harus unik. Password
+        divalidasi menggunakan password validator bawaan Django.
+      summary: Registrasi akun baru
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Register'
+            examples:
+              ContohRequest:
+                value:
+                  username: riski
+                  email: riski@example.com
+                  password: passwordku123
+                summary: Contoh request
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Register'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Register'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterResponse'
+              examples:
+                ContohResponseSukses:
+                  value:
+                    message: Account Berhasil Dibuat
+                  summary: Contoh response sukses
+          description: ''
+        '400':
+          description: 'Data tidak valid: username/email sudah dipakai, email tidak
+            valid, atau password tidak memenuhi kriteria.'
+  /transaction/catatan_keuangan/api/category/:
+    get:
+      operationId: transaction_catatan_keuangan_api_category_list
+      description: Menampilkan seluruh kategori milik user yang sedang login, diurutkan
+        berdasarkan nama.
+      summary: Daftar kategori
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - transaction
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCategoryList'
+          description: ''
+    post:
+      operationId: transaction_catatan_keuangan_api_category_create
+      description: Membuat kategori baru untuk user yang sedang login. Nama kategori
+        harus unik per user.
+      summary: Buat kategori
+      tags:
+      - transaction
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Category'
+            examples:
+              ContohRequest:
+                value:
+                  name: Hadiah
+                  is_default: false
+                summary: Contoh request
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Category'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Category'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+  /transaction/catatan_keuangan/api/category/{id}/:
+    get:
+      operationId: transaction_catatan_keuangan_api_category_retrieve
+      description: |-
+        ViewSet CRUD kategori transaksi.
+
+        Kategori bersifat unik per user; kategori default
+        dibuat otomatis saat user mendaftar.
+      summary: Detail kategori
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this category.
+        required: true
+      tags:
+      - transaction
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+    put:
+      operationId: transaction_catatan_keuangan_api_category_update
+      description: |-
+        ViewSet CRUD kategori transaksi.
+
+        Kategori bersifat unik per user; kategori default
+        dibuat otomatis saat user mendaftar.
+      summary: Perbarui seluruh data kategori
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this category.
+        required: true
+      tags:
+      - transaction
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Category'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Category'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Category'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+    patch:
+      operationId: transaction_catatan_keuangan_api_category_partial_update
+      description: |-
+        ViewSet CRUD kategori transaksi.
+
+        Kategori bersifat unik per user; kategori default
+        dibuat otomatis saat user mendaftar.
+      summary: Perbarui sebagian data kategori
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this category.
+        required: true
+      tags:
+      - transaction
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCategory'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCategory'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCategory'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+    delete:
+      operationId: transaction_catatan_keuangan_api_category_destroy
+      description: Kategori yang sudah dipakai transaksi tidak bisa dihapus.
+      summary: Hapus kategori
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this category.
+        required: true
+      tags:
+      - transaction
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /transaction/catatan_keuangan/api/transaction/:
+    get:
+      operationId: transaction_catatan_keuangan_api_transaction_list
+      description: Menampilkan seluruh transaksi milik user yang sedang login (diurutkan
+        berdasarkan tanggal transaksi terbaru), dengan paginasi 10 data per halaman.
+      summary: Daftar transaksi
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: integer
+        description: Filter berdasarkan id kategori milik user.
+      - in: query
+        name: date_from
+        schema:
+          type: string
+          format: date
+        description: Transaksi sejak tanggal ini ( inklusif ).
+      - in: query
+        name: date_to
+        schema:
+          type: string
+          format: date
+        description: Transaksi sampai tanggal ini ( inklusif ).
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: type
+        schema:
+          type: string
+          enum:
+          - EXPENSE
+          - INCOME
+        description: Filter berdasarkan jenis transaksi.
+      tags:
+      - transaction
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTransactionList'
+          description: ''
+    post:
+      operationId: transaction_catatan_keuangan_api_transaction_create
+      description: Mencatat transaksi baru untuk user yang sedang login. Kategori
+        harus milik user tersebut dan nominal harus lebih dari 0.
+      summary: Buat transaksi
+      tags:
+      - transaction
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+            examples:
+              TransaksiPemasukan:
+                value:
+                  category: 1
+                  type: INCOME
+                  amount: '50000.00'
+                  description: Gaji bulanan
+                  transaction_date: '2026-10-05T12:00:00Z'
+                summary: Transaksi pemasukan
+              TransaksiPengeluaran:
+                value:
+                  category: 2
+                  type: EXPENSE
+                  amount: '15000.00'
+                  description: Makan siang
+                  transaction_date: '2026-10-05T13:30:00Z'
+                summary: Transaksi pengeluaran
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+          description: ''
+  /transaction/catatan_keuangan/api/transaction/{id}/:
+    get:
+      operationId: transaction_catatan_keuangan_api_transaction_retrieve
+      description: Menampilkan satu transaksi berdasarkan id.
+      summary: Detail transaksi
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - transaction
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+          description: ''
+    put:
+      operationId: transaction_catatan_keuangan_api_transaction_update
+      description: |-
+        ViewSet CRUD transaksi (pemasukan / pengeluaran).
+
+        Setiap user hanya bisa melihat dan mengubah transaksinya sendiri.
+      summary: Perbarui seluruh data transaksi
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - transaction
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+          description: ''
+    patch:
+      operationId: transaction_catatan_keuangan_api_transaction_partial_update
+      description: |-
+        ViewSet CRUD transaksi (pemasukan / pengeluaran).
+
+        Setiap user hanya bisa melihat dan mengubah transaksinya sendiri.
+      summary: Perbarui sebagian data transaksi
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - transaction
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedTransaction'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedTransaction'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedTransaction'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+          description: ''
+    delete:
+      operationId: transaction_catatan_keuangan_api_transaction_destroy
+      description: |-
+        ViewSet CRUD transaksi (pemasukan / pengeluaran).
+
+        Setiap user hanya bisa melihat dan mengubah transaksinya sendiri.
+      summary: Hapus transaksi
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - transaction
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+components:
+  schemas:
+    Category:
+      type: object
+      description: |-
+        Serializer kategori transaksi.
+
+        Field `user`, `created_at`, dan `updated_at` diisi otomatis
+        (read-only). Nama kategori unik per user.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        is_default:
+          type: boolean
+        name:
+          type: string
+          maxLength: 100
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        user:
+          type: integer
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - name
+      - updated_at
+      - user
+    Login:
+      type: object
+      description: |-
+        Serializer login.
+
+        Mengembalikan access & refresh token JWT,
+        ditambah klaim tambahan `username` dan `id` di dalam token
+        serta di response JSON.
+      properties:
+        username:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+      required:
+      - password
+      - username
+    LogoutRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+      required:
+      - refresh
+    PaginatedCategoryList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+    PaginatedTransactionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Transaction'
+    PatchedCategory:
+      type: object
+      description: |-
+        Serializer kategori transaksi.
+
+        Field `user`, `created_at`, dan `updated_at` diisi otomatis
+        (read-only). Nama kategori unik per user.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        is_default:
+          type: boolean
+        name:
+          type: string
+          maxLength: 100
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        user:
+          type: integer
+          readOnly: true
+    PatchedTransaction:
+      type: object
+      description: |-
+        Serializer transaksi.
+
+        Field `user`, `created_at`, dan `updated_at` diisi otomatis
+        (read-only). Kategori wajib milik user yang bersangkutan
+        dan `amount` harus lebih dari 0.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        type:
+          $ref: '#/components/schemas/TypeEnum'
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+        description:
+          type: string
+        transaction_date:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        user:
+          type: integer
+          readOnly: true
+        category:
+          type: integer
+    Register:
+      type: object
+      description: |-
+        Serializer untuk registrasi user baru.
+
+        Password diperiksa dengan password validator Django
+        (panjang minimal, tidak mirip username, bukan password umum, dll).
+      properties:
+        username:
+          type: string
+          description: Nama pengguna unik, maksimal 150 karakter.
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          description: Alamat email valid dan belum terdaftar.
+        password:
+          type: string
+          writeOnly: true
+          description: Password akun. Tidak pernah dikembalikan oleh API.
+          maxLength: 240
+      required:
+      - email
+      - password
+      - username
+    RegisterResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+      - message
+    TokenPairResponse:
+      type: object
+      properties:
+        access:
+          type: string
+        refresh:
+          type: string
+        username:
+          type: string
+        id:
+          type: integer
+      required:
+      - access
+      - id
+      - refresh
+      - username
+    Transaction:
+      type: object
+      description: |-
+        Serializer transaksi.
+
+        Field `user`, `created_at`, dan `updated_at` diisi otomatis
+        (read-only). Kategori wajib milik user yang bersangkutan
+        dan `amount` harus lebih dari 0.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        type:
+          $ref: '#/components/schemas/TypeEnum'
+        amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,13}(?:\.\d{0,2})?$
+        description:
+          type: string
+        transaction_date:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        user:
+          type: integer
+          readOnly: true
+        category:
+          type: integer
+      required:
+      - amount
+      - category
+      - created_at
+      - id
+      - transaction_date
+      - type
+      - updated_at
+      - user
+    TypeEnum:
+      enum:
+      - INCOME
+      - EXPENSE
+      type: string
+      description: |-
+        * `INCOME` - Income
+        * `EXPENSE` - Expense
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+servers:
+- url: https://catatan-keuangan-eight-khaki.vercel.app
+  description: Production
+- url: http://127.0.0.1:8000
+  description: Local
+tags:
+- name: auth
+  description: Registrasi, login (JWT), dan logout akun.
+- name: transaction
+  description: CRUD transaksi (pemasukan/pengeluaran) dan kategori.
