@@ -1,0 +1,1 @@
+from .default_category import create_default_categories
