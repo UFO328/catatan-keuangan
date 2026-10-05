@@ -75,6 +75,10 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True # <-- biar frontend bisa akses
+CSRF_TRUSTED_ORIGINS = [
+    "https://catatan-keuangan-eight-khaki.vercel.app",
+    "https://*.vercel.app"
+]
 
 ROOT_URLCONF = 'catatan_keuangan.urls'
 
