@@ -16,7 +16,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = getenv("SECRET_KEY")
 DEBUG = getenv("DEBUG", "True") == "True" # <-- INI YANG BENER
 
-ALLOWED_HOSTS = ["*"] # <-- biar Vercel bisa masuk
+ALLOWED_HOSTS = ["*.vercel.app"] # <-- biar Vercel bisa masuk
 # nanti kalo udah online ganti jadi ["*.vercel.app"]
 
 INSTALLED_APPS = [
