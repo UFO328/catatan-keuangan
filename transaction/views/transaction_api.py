@@ -94,7 +94,7 @@ class TransactionAPI(viewsets.ModelViewSet):
   Setiap user hanya bisa melihat dan mengubah transaksinya sendiri.
   """
   serializer_class = TransactionSerializer
-  filterset_class = [TransactionFilter]
+  filterset_class = TransactionFilter
 
   def get_queryset(self):
     queryset = Transaction.objects.filter(user=self.request.user).select_related("category")

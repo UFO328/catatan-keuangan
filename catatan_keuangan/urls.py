@@ -6,6 +6,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/catatan_keuangan/api/', include('account.urls')),
     path('transaction/catatan_keuangan/api/', include('transaction.urls')),
+    path('dashboard/catatan_keuangan/api/', include('dasboard.urls')),
 
     # open schema
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),

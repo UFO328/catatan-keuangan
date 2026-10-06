@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'corsheaders', # <-- tambah ini
     'account',
     'transaction',
+    'dasboard'
 ]
 
 REST_FRAMEWORK = {

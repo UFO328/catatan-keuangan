@@ -1,4 +1,4 @@
-from rest_framework_simplejwt.views import TokenObtainPairView
+content://com.termux.documents/tree/%2Fdata%2Fdata%2Fcom.termux%2Ffiles%2Fhome::/data/data/com.termux/files/home/catatan_keuangan/account/views/login_api.pyfrom rest_framework_simplejwt.views import TokenObtainPairView
 from drf_spectacular.utils import (
   extend_schema,
   OpenApiExample,

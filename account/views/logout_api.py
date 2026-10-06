@@ -39,10 +39,10 @@ LogoutRequest = inline_serializer(
 )
 class LogOutAPI(APIView):
   """Endpoint logout dengan cara men-blacklist refresh token."""
-  def post(self):
+  def post(self,request):
     try:
       token = RefreshToken(self.request.data.get("refresh"))
       token.blacklist()
     except TokenError:
-      return Response({'detail:Token Tidak Valid'},status=status.HTTP_400_BAD_REQUEST)
+      return Response({'detail':'Token Tidak Valid'},status=status.HTTP_400_BAD_REQUEST)
     return Response(status=status.HTTP_205_RESET_CONTENT)
