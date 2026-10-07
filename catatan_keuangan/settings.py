@@ -85,6 +85,10 @@ SPECTACULAR_SETTINGS = {
             'name': 'transaction',
             'description': 'CRUD transaksi (pemasukan/pengeluaran) dan kategori.',
         },
+        {
+            'name': 'dashboard',
+            'description': 'Ringkasan keuangan: total pemasukan, pengeluaran, dan rincian per kategori.',
+        },
     ],
     'CONTACT': {
         'name': 'Catatan Keuangan',

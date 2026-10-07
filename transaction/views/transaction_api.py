@@ -4,11 +4,25 @@ from drf_spectacular.utils import (
   extend_schema_view,
   OpenApiExample,
   OpenApiParameter,
+  OpenApiResponse,
   OpenApiTypes,
 )
 from ..models import Transaction
 from ..serializer import TransactionSerializer
 from ..filter_transaction import TransactionFilter
+
+ID_PARAM = OpenApiParameter(
+  "id",
+  OpenApiTypes.INT,
+  OpenApiParameter.PATH,
+  description="ID transaksi.",
+)
+VALIDATION_400 = OpenApiResponse(
+  description=(
+    "Data tidak valid: kategori bukan milik user, "
+    "nominal harus lebih dari 0, atau kolom wajib belum terisi."
+  ),
+)
 
 
 @extend_schema_view(
@@ -46,6 +60,7 @@ from ..filter_transaction import TransactionFilter
   retrieve=extend_schema(
     summary="Detail transaksi",
     description="Menampilkan satu transaksi berdasarkan id.",
+    parameters=[ID_PARAM],
   ),
   create=extend_schema(
     summary="Buat transaksi",
@@ -53,6 +68,10 @@ from ..filter_transaction import TransactionFilter
       "Mencatat transaksi baru untuk user yang sedang login. "
       "Kategori harus milik user tersebut dan nominal harus lebih dari 0."
     ),
+    responses={
+      201: TransactionSerializer,
+      400: VALIDATION_400,
+    },
     examples=[
       OpenApiExample(
         "Transaksi pemasukan",
@@ -80,12 +99,23 @@ from ..filter_transaction import TransactionFilter
   ),
   update=extend_schema(
     summary="Perbarui seluruh data transaksi",
+    parameters=[ID_PARAM],
+    responses={
+      200: TransactionSerializer,
+      400: VALIDATION_400,
+    },
   ),
   partial_update=extend_schema(
     summary="Perbarui sebagian data transaksi",
+    parameters=[ID_PARAM],
+    responses={
+      200: TransactionSerializer,
+      400: VALIDATION_400,
+    },
   ),
   destroy=extend_schema(
     summary="Hapus transaksi",
+    parameters=[ID_PARAM],
   ),
 )
 class TransactionAPI(viewsets.ModelViewSet):

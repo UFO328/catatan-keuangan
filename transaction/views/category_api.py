@@ -4,11 +4,21 @@ from drf_spectacular.utils import (
   extend_schema,
   extend_schema_view,
   OpenApiExample,
+  OpenApiParameter,
+  OpenApiResponse,
+  OpenApiTypes,
 )
 from django.core.exceptions import ValidationError
 from django.db.models.deletion import ProtectedError
 from ..models import Category
 from ..serializer import CategorySerializer
+
+ID_PARAM = OpenApiParameter(
+  "id",
+  OpenApiTypes.INT,
+  OpenApiParameter.PATH,
+  description="ID kategori.",
+)
 
 
 @extend_schema_view(
@@ -21,6 +31,7 @@ from ..serializer import CategorySerializer
   ),
   retrieve=extend_schema(
     summary="Detail kategori",
+    parameters=[ID_PARAM],
   ),
   create=extend_schema(
     summary="Buat kategori",
@@ -28,6 +39,12 @@ from ..serializer import CategorySerializer
       "Membuat kategori baru untuk user yang sedang login. "
       "Nama kategori harus unik per user."
     ),
+    responses={
+      201: CategorySerializer,
+      400: OpenApiResponse(
+        description="Nama kategori duplikat untuk user yang sama."
+      ),
+    },
     examples=[
       OpenApiExample(
         "Contoh request",
@@ -38,13 +55,22 @@ from ..serializer import CategorySerializer
   ),
   update=extend_schema(
     summary="Perbarui seluruh data kategori",
+    parameters=[ID_PARAM],
   ),
   partial_update=extend_schema(
     summary="Perbarui sebagian data kategori",
+    parameters=[ID_PARAM],
   ),
   destroy=extend_schema(
     summary="Hapus kategori",
     description="Kategori yang sudah dipakai transaksi tidak bisa dihapus.",
+    parameters=[ID_PARAM],
+    responses={
+      204: OpenApiResponse(description="Kategori berhasil dihapus."),
+      400: OpenApiResponse(
+        description="Kategori tidak bisa dihapus karena sudah dipakai transaksi."
+      ),
+    },
   ),
 )
 class CategoryAPI(viewsets.ModelViewSet):
