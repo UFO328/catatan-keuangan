@@ -11,3 +11,11 @@ class CategorySerializer(serializers.ModelSerializer):
     model = Category
     fields = "__all__"
     read_only_fields=['user','created_at','updated_at']
+
+  def validate_name(self,data):
+    user = self.context["request"].user
+    if Category.objects.filter(name=data,user=user).exists():
+      raise serializers.ValidationError("Terjadi Duplikat Category")
+    return data
+    
+  

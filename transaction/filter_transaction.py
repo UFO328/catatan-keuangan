@@ -1,5 +1,5 @@
 import django_filters
-from .models import Transaction
+from .models import Transaction,Category
 
 class TransactionFilter(django_filters.FilterSet):
     category = django_filters.ModelChoiceFilter(

@@ -31,7 +31,7 @@ class RegisterSerializer(serializers.Serializer):
     try:
       validate_password(pw)
     except ValidationError as e:
-      raise serializers.ValidationError(list(e.message))
+      raise serializers.ValidationError(list(e.messages))
     return pw
 
   def validate(self,data):

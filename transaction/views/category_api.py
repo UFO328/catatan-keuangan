@@ -1,9 +1,12 @@
-from rest_framework import viewsets
+from rest_framework import viewsets,status
+from rest_framework.response import Response
 from drf_spectacular.utils import (
   extend_schema,
   extend_schema_view,
   OpenApiExample,
 )
+from django.core.exceptions import ValidationError
+from django.db.models.deletion import ProtectedError
 from ..models import Category
 from ..serializer import CategorySerializer
 
@@ -53,8 +56,17 @@ class CategoryAPI(viewsets.ModelViewSet):
   serializer_class = CategorySerializer
 
   def get_queryset(self):
-    queryset = Category.objects.select_related("user")
+    queryset = Category.objects.filter(user=self.request.user).select_related("user")
     return queryset
 
   def perform_create(self,serializer):
     serializer.save(user=self.request.user)
+
+  def destroy(self,request,*args,**kwargs):
+    try:
+      return super().destroy(request,*args,**kwargs)
+    except ProtectedError:
+      return Response({"detail":"Category Tidak Bisa Di Hapus"},status=status.HTTP_400_BAD_REQUEST)
+    
+
+  
