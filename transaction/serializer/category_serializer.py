@@ -14,7 +14,10 @@ class CategorySerializer(serializers.ModelSerializer):
 
   def validate_name(self,data):
     user = self.context["request"].user
-    if Category.objects.filter(name=data,user=user).exists():
+    queryset = Category.objects.filter(name=data,user=user)
+    if self.instance is not None:
+      queryset = queryset.exclude(pk=self.instance.pk)
+    if queryset.exists():
       raise serializers.ValidationError("Terjadi Duplikat Category")
     return data
     
